@@ -36,7 +36,7 @@ function Home({ schedule }) {
   );
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps(context) {
   const res = await axios.get(`${process.env.API_ENDPOINT}/schedule/now`);
   return {
     props: {
