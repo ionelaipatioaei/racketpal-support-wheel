@@ -1,25 +1,31 @@
-FROM node:14.15.4-alpine3.12
+# Install dependencies only when needed
+FROM node:lts-alpine AS deps
 
-WORKDIR /usr/src/app
+WORKDIR /opt/app
+COPY package.json ./
+RUN yarn install --frozen-lockfile
 
-COPY package*.json ./
+# Rebuild the source code only when needed
+# This is where because may be the case that you would try
+# to build the app based on some `X_TAG` in my case (Git commit hash)
+# but the code hasn't changed.
+FROM node:lts-alpine AS builder
 
-RUN npm install
+ENV NODE_ENV=production
+WORKDIR /opt/app
+COPY . .
+COPY --from=deps /opt/app/node_modules ./node_modules
+RUN yarn build
 
-COPY ./ ./
+# Production image, copy all the files and run next
+FROM node:lts-alpine AS runner
 
-RUN npm rebuild node-sass
-
-RUN npm run build
-
-EXPOSE 3000
-# Set app serving to permissive / assigned
-ENV NUXT_HOST=0.0.0.0
-# Set app port
-ENV NUXT_PORT=3000
-# Set the node env to production
-ENV NODE_END=production
-# Set the api endpoint
+ARG X_TAG
+WORKDIR /opt/app
+ENV NODE_ENV=production
 ENV API_ENDPOINT=http://api:4000
-
-CMD ["npm", "run", "start"]
+#COPY --from=builder /opt/app/next.config.js ./
+COPY --from=builder /opt/app/public ./public
+COPY --from=builder /opt/app/.next ./.next
+COPY --from=builder /opt/app/node_modules ./node_modules
+CMD ["node_modules/.bin/next", "start"]
