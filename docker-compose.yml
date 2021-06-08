@@ -13,7 +13,7 @@ services:
     ports:
       - "127.0.0.1:4000:4000"
 
-  redis:
+  mongo:
     image: mongo
     ports:
       - "127.0.0.1:27117:27117"
