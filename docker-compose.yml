@@ -16,7 +16,7 @@ services:
   redis:
     image: mongo
     ports:
-      - "127.0.0.1:27000:27117"
+      - "127.0.0.1:27117:27117"
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: support_wheel_user
